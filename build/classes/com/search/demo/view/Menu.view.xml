@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ViewConfig>
+  <Arguments/>
+  <Context/>
+  <Model>
+    <DataType name="dtMenu">
+      <Property name="creationType">com.search.demo.entity.Menu</Property>
+      <PropertyDef name="id">
+        <Property name="dataType">int</Property>
+      </PropertyDef>
+      <PropertyDef name="parentid">
+        <Property name="dataType">int</Property>
+      </PropertyDef>
+      <PropertyDef name="menuname">
+        <Property></Property>
+      </PropertyDef>
+      <PropertyDef name="url">
+        <Property></Property>
+      </PropertyDef>
+      <Reference name="child">
+        <Property name="dataProvider">menuController#getmenus</Property>
+        <Property name="dataType">[SELF]</Property>
+        <Property name="parameter">$${this.id}</Property>
+      </Reference>
+    </DataType>
+  </Model>
+  <View>
+    <DataSet id="dsMenu">
+      <Property name="dataProvider">menuController#getmenus</Property>
+      <Property name="dataType">[dtMenu]</Property>
+    </DataSet>
+    <DataSet id="dsMenuAdd">
+      <Property name="dataType">[dtMenu]</Property>
+    </DataSet>
+    <SplitPanel>
+      <Property name="position">200</Property>
+      <MainControl/>
+      <SideControl>
+        <GroupBox>
+          <Property name="caption">菜单管理</Property>
+          <Buttons/>
+          <Children>
+            <ToolBar>
+              <ToolBarButton>
+                <ClientEvent name="onClick">var menu = view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode&quot;);&#xD;
+&#xD;
+if(menu != undefined){&#xD;
+	var parentid = menu.get(&quot;parentid&quot;);&#xD;
+	view.get(&quot;#dsMenuAdd&quot;).insert({id:&quot;&quot;,menu_Name:&quot;&quot;,parentid:parentid,url:&quot;&quot;});&#xD;
+}else{&#xD;
+	view.get(&quot;#dsMenuAdd&quot;).insert();&#xD;
+}&#xD;
+&#xD;
+var currentNode = view.get(&quot;#datatree&quot;).get(&quot;currentNode&quot;); &#xD;
+var currentEntity = null;&#xD;
+if (currentNode != null) {&#xD;
+	currentEntity = currentNode.get(&quot;data&quot;);&#xD;
+	currentEntity.parent.insert({}, &quot;begin&quot;);&#xD;
+}&#xD;
+&#xD;
+view.get(&quot;#dialogMenuAdd&quot;).show();</ClientEvent>
+                <Property name="caption">增加</Property>
+              </ToolBarButton>
+              <ToolBarButton>
+                <Property name="caption">删除</Property>
+              </ToolBarButton>
+              <ToolBarButton>
+                <Property name="caption">修改</Property>
+              </ToolBarButton>
+            </ToolBar>
+            <DataTree id="datatree">
+              <Property name="dataSet">dsMenu</Property>
+              <Property name="currentNodeDataPath">currentNode</Property>
+              <BindingConfigs>
+                <BindingConfig>
+                  <Property name="name">menus</Property>
+                  <Property name="labelProperty">menuname</Property>
+                  <Property name="recursive">true</Property>
+                  <Property name="childrenProperty">child</Property>
+                </BindingConfig>
+              </BindingConfigs>
+            </DataTree>
+          </Children>
+        </GroupBox>
+      </SideControl>
+    </SplitPanel>
+    <Dialog id="dialogMenuAdd">
+      <Property name="hideMode">visibility</Property>
+      <Buttons/>
+      <Children>
+        <GroupBox>
+          <Property name="caption">菜单增加</Property>
+          <Buttons>
+            <Button>
+              <ClientEvent name="onClick">var entity = view.get(&quot;#autoFormAdd&quot;).get(&quot;entity&quot;);&#xD;
+&#xD;
+view.get(&quot;#updateActionAdd&quot;).execute(function(returnValue){&#xD;
+	if(returnValue == null){&#xD;
+		view.get(&quot;#addNode&quot;).close();&#xD;
+		if(entity==undefined || !entity.get(&quot;parentid&quot;)){&#xD;
+			view.get(&quot;#dsMenu&quot;).flush();&#xD;
+		}else{&#xD;
+			var childs = view.get(&quot;#datatree&quot;).get(&quot;currentNode&quot;).get(&quot;data&quot;).get(&quot;child&quot;);&#xD;
+			childs.each(function(entity){&#xD;
+					&#xD;
+			if(undefined == entity.get(&quot;id&quot;)){&#xD;
+				view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode.child&quot;).flush();&#xD;
+				var newNode = view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode.child&quot;).getLast();&#xD;
+				entity.set({&#xD;
+					id:newNode.get(&quot;id&quot;),&#xD;
+					menuname:newNode.get(&quot;menuname&quot;),&#xD;
+					parentid:newNode.get(&quot;parentid&quot;),&#xD;
+					url:newNode.get(&quot;url&quot;)&#xD;
+					});&#xD;
+				}&#xD;
+			});&#xD;
+			&#xD;
+			var newNode = view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode.child&quot;).getLast();&#xD;
+				view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode.childDataGrid&quot;).insert({&#xD;
+					id:newNode.get(&quot;id&quot;),&#xD;
+					menumame:newNode.get(&quot;menuname&quot;),&#xD;
+					parentid:newNode.get(&quot;parentid&quot;),&#xD;
+					url:newNode.get(&quot;url&quot;)&#xD;
+				});&#xD;
+			view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode.childDataGrid&quot;).flush();&#xD;
+		}&#xD;
+	}else{&#xD;
+		throw new dorado.Exception(returnValue);&#xD;
+	}&#xD;
+});</ClientEvent>
+              <Property name="caption">提交</Property>
+            </Button>
+            <Button>
+              <ClientEvent name="onClick">var node = view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode&quot;);&#xD;
+if(node != undefined){&#xD;
+	var child = view.get(&quot;#dsMenu&quot;).getData(&quot;!currentNode.child&quot;);&#xD;
+	if(child.getFirst() != null){&#xD;
+		child.each(function(entity){&#xD;
+		if(undefined == entity.get(&quot;id&quot;)){&#xD;
+			entity.remove();&#xD;
+			view.get(&quot;#dsMenuAdd&quot;).clear();&#xD;
+			}&#xD;
+		});&#xD;
+	}else{&#xD;
+		node.remove();&#xD;
+		view.get(&quot;#dsMenuAdd&quot;).clear();&#xD;
+	}&#xD;
+}&#xD;
+&#xD;
+view.get(&quot;#dialogMenuAdd&quot;).close()&#xD;
+</ClientEvent>
+              <Property name="caption">取消</Property>
+            </Button>
+          </Buttons>
+          <Children>
+            <AutoForm>
+              <Property name="dataSet">dsMenuAdd</Property>
+              <Property name="cols">*</Property>
+              <AutoFormElement>
+                <Property name="name">menuname</Property>
+                <Property name="property">menuname</Property>
+                <Property name="label">菜单名称</Property>
+                <Editor/>
+              </AutoFormElement>
+              <AutoFormElement>
+                <Property name="property">url</Property>
+                <Property name="label">功能访问地址</Property>
+                <Editor/>
+              </AutoFormElement>
+            </AutoForm>
+          </Children>
+        </GroupBox>
+      </Children>
+      <Tools/>
+    </Dialog>
+    <UpdateAction id="updateActionAdd">
+      <Property name="executingMessage">正在执行...</Property>
+      <Property name="successMessage">执行成功!</Property>
+      <Property name="dataResolver">menuController#updateMenu</Property>
+      <UpdateItem>
+        <Property name="dataPath">[#visible]</Property>
+        <Property name="dataSet">dsMenuAdd</Property>
+      </UpdateItem>
+    </UpdateAction>
+  </View>
+</ViewConfig>

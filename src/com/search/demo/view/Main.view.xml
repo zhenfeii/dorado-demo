@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ViewConfig>
+  <Arguments/>
+  <Context/>
+  <Model>
+    <DataType name="Menu">
+      <Property name="creationType">com.search.demo.entity.Menu</Property>
+      <PropertyDef name="id">
+        <Property name="dataType">int</Property>
+      </PropertyDef>
+      <PropertyDef name="parentid">
+        <Property name="dataType">int</Property>
+      </PropertyDef>
+      <PropertyDef name="menuname">
+        <Property></Property>
+      </PropertyDef>
+      <PropertyDef name="url">
+        <Property></Property>
+      </PropertyDef>
+      <Reference name="menus">
+        <Property name="dataType">[Menu]</Property>
+        <Property name="dataProvider">menuController#getmenus</Property>
+        <Property name="parameter">$${this.id}</Property>
+      </Reference>
+    </DataType>
+  </Model>
+  <View>
+    <ClientEvent name="onCreate">&#xD;
+self.$openTab = function(config){&#xD;
+    if (!config) {&#xD;
+        return;&#xD;
+    }&#xD;
+    var tabConfig = config.tab;&#xD;
+	&#xD;
+    if (!tabConfig) {&#xD;
+        dorado.MessageBox.alert(&quot;必须指定要打开标签的配置&quot;);&#xD;
+        return;&#xD;
+    }&#xD;
+    if (!tabConfig || &quot;object&quot; != (typeof tabConfig)) {&#xD;
+        dorado.MessageBox.alert(&quot;必须指定打开的Tab页的配置集&quot;);&#xD;
+        return;&#xD;
+    }&#xD;
+	/*if(tabConfig.gnmk &amp;&amp; tabConfig.gnmk instanceof dorado.Entity){&#xD;
+		tabConfig.gnmk = tabConfig.gnmk.getData();&#xD;
+	}*/&#xD;
+    if (!tabConfig.name &amp;&amp; !tabConfig.caption) {&#xD;
+        dorado.MessageBox.alert(&quot;必须指定标签的名称&quot;);&#xD;
+    }&#xD;
+    if (!tabConfig.caption) {&#xD;
+        tabConfig.caption = tabConfig.name;&#xD;
+    }&#xD;
+    if (!tabConfig.name) {&#xD;
+        tabConfig.name = tabConfig.caption;&#xD;
+    }&#xD;
+    if (!tabConfig.closeable) {&#xD;
+        tabConfig.closeable = true;&#xD;
+    }&#xD;
+	&#xD;
+	var tab = {&#xD;
+		&quot;$type&quot;: &quot;Control&quot;,&#xD;
+		name: tabConfig.name,&#xD;
+		caption: tabConfig.caption,&#xD;
+		closeable: true,&#xD;
+		&quot;control&quot; : {&#xD;
+		 &#xD;
+				&quot;$type&quot;: &quot;IFrame&quot;,&#xD;
+				&quot;visible&quot;: true,&#xD;
+				&quot;path&quot;: $url(tabConfig.path),&#xD;
+				&quot;listener&quot;: {&#xD;
+					&quot;onReady&quot;: (function(self, arg){&#xD;
+						var cf = 	new CFInstance(&#xD;
+								{ &#xD;
+								  node:self._doms.iframe,&#xD;
+								   src: $url(tabConfig.path),&#xD;
+								   className:&quot;chromeFrame&quot;&#xD;
+								});&#xD;
+						  &#xD;
+						})&#xD;
+					 &#xD;
+				}&#xD;
+&#xD;
+		}&#xD;
+&#xD;
+	};&#xD;
+   var removeOld = config.removeOld || &quot;S&quot; == self.$getOpenTabMode();&#xD;
+	var refreshOld = config.refreshOld;&#xD;
+	&#xD;
+	delete(config.removeOld);&#xD;
+	delete(config.refreshOld);&#xD;
+    var index = config.index;&#xD;
+    var tabControlWorkspace = view.get(&quot;#tabControlWorkspace&quot;);&#xD;
+    &#xD;
+    if (&quot;S&quot; == self.$getOpenTabMode()) {&#xD;
+        tabControlWorkspace.removeAllTabs();&#xD;
+    }&#xD;
+    &#xD;
+    if (!index) {&#xD;
+        index = tabControlWorkspace.get(&quot;tabs&quot;).size;&#xD;
+    }&#xD;
+	&#xD;
+&#xD;
+    var oldTab = tabControlWorkspace.getTab(tabConfig.name);&#xD;
+&#xD;
+    if (!oldTab) {&#xD;
+		//modified&#xD;
+	    var currentTab = null;&#xD;
+		&#xD;
+		if( tabConfig.gnmk &amp;&amp; (tabConfig.gnmk.openWith) =='0'){&#xD;
+			&#xD;
+				if(window.externalHost){&#xD;
+					//代表用ChromeFrame打开&#xD;
+					currentTab = tabControlWorkspace.addTab(tab, index);&#xD;
+				}else {&#xD;
+					currentTab = tabControlWorkspace.addTab(tabConfig, index);&#xD;
+				}&#xD;
+				&#xD;
+		}else if(tabConfig.gnmk &amp;&amp; (tabConfig.gnmk.openWith) =='1'){//主界面一定是使用IE访问，普通打开tab就是用ie&#xD;
+				currentTab = tabControlWorkspace.addTab(tabConfig, index);&#xD;
+		}else{&#xD;
+			&#xD;
+			if(window.externalHost){&#xD;
+				//代表用ChromeFrame打开&#xD;
+				currentTab = tabControlWorkspace.addTab(tab, index);&#xD;
+			}else {&#xD;
+				if(dorado.Browser.msie){&#xD;
+					currentTab = tabControlWorkspace.addTab(tabConfig, index);&#xD;
+				}else{&#xD;
+					currentTab = tabControlWorkspace.addTab(tabConfig, index);&#xD;
+				}&#xD;
+			}&#xD;
+		}&#xD;
+		&#xD;
+        tabControlWorkspace.set(&quot;currentTab&quot;, currentTab);&#xD;
+   &#xD;
+		&#xD;
+&#xD;
+		var iframe_tab = currentTab.get('control').getIFrameWindow();&#xD;
+&#xD;
+		&#xD;
+        return currentTab;&#xD;
+    }else{&#xD;
+		//dorado.MessageBox.alert(&quot;当前页面已经打开了&quot;)	&#xD;
+	}&#xD;
+    if (removeOld) {&#xD;
+        tabControlWorkspace.removeTab(tab);&#xD;
+        tabControlWorkspace.addTab(tabConfig, index);&#xD;
+        return;&#xD;
+    }&#xD;
+    &#xD;
+  &#xD;
+    if (refreshOld) {&#xD;
+        oldTab.set(&quot;path&quot;, tabConfig.path);&#xD;
+    }&#xD;
+    tabControlWorkspace.set(&quot;currentTab&quot;, oldTab);&#xD;
+    &#xD;
+};&#xD;
+&#xD;
+self.$getOpenTabMode = function(){&#xD;
+    return &quot;M&quot;;&#xD;
+}&#xD;
+</ClientEvent>
+    <DataSet id="dsMenu">
+      <Property name="dataProvider">menuController#getmenus</Property>
+      <Property name="dataType">[Menu]</Property>
+    </DataSet>
+    <SplitPanel>
+      <Property name="position">200</Property>
+      <MainControl>
+        <TabControl id="tabControlWorkspace"/>
+      </MainControl>
+      <SideControl>
+        <DataTree id="dataTreeMenu">
+          <ClientEvent name="onDataNodeCreate">&#xD;
+</ClientEvent>
+          <ClientEvent name="onDataRowClick">var data =view.get(&quot;#dataTreeMenu&quot;).get(&quot;currentNode&quot;).get(&quot;data&quot;)&#xD;
+&#xD;
+//dorado.MessageBox.alert(data.get(&quot;menuname&quot;))&#xD;
+if(data.get('url')!=null){&#xD;
+	view.$openTab({&#xD;
+            tab: {&#xD;
+                $type: &quot;IFrame&quot;,&#xD;
+                path: data.get(&quot;url&quot;),&#xD;
+                name: data.get(&quot;menuname&quot;),&#xD;
+                caption: data.get(&quot;menuname&quot;),&#xD;
+                closeable: true&#xD;
+          &#xD;
+            }&#xD;
+        });&#xD;
+}</ClientEvent>
+          <Property name="dataSet">dsMenu</Property>
+          <Property name="currentNodeDataPath">currentNode</Property>
+          <BindingConfigs>
+            <BindingConfig>
+              <Property name="labelProperty">menuname</Property>
+              <Property name="name">level1</Property>
+              <Property name="recursive">true</Property>
+              <Property name="childrenProperty">menus</Property>
+            </BindingConfig>
+          </BindingConfigs>
+        </DataTree>
+      </SideControl>
+    </SplitPanel>
+  </View>
+</ViewConfig>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ViewConfig>
+  <Arguments/>
+  <Context/>
+  <Model>
+    <DataType name="Exam">
+      <Property name="creationType">com.search.demo.entity.Exam</Property>
+      <PropertyDef name="id">
+        <Property name="dataType">int</Property>
+      </PropertyDef>
+      <PropertyDef name="date">
+        <Property/>
+      </PropertyDef>
+      <PropertyDef name="content">
+        <Property/>
+      </PropertyDef>
+    </DataType>
+  </Model>
+  <View>
+    <DataSet id="dsExam">
+      <Property name="dataType">[Exam]</Property>
+      <Property name="dataProvider">examController#getExams</Property>
+    </DataSet>
+    <DataGrid>
+      <Property name="dataSet">dsExam</Property>
+    </DataGrid>
+  </View>
+</ViewConfig>
